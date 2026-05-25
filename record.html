@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horse's Mouth - Record Your Story</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --purple: #5B4FD8;
+    --purple-light: #7B6FE8;
+    --bg: #F7F5FF;
+    --card: #FFFFFF;
+    --text: #1A1A2E;
+    --muted: #6B6B8A;
+    --border: #E0DCF5;
+    --error: #E53E3E;
+    --success: #38A169;
+    --red: #E53E3E;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .logo {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .logo h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    color: var(--purple);
+    letter-spacing: -0.5px;
+  }
+
+  .logo p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 16px rgba(91,79,216,0.06);
+  }
+
+  .request-from {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .request-info small {
+    font-size: 12px;
+    color: var(--muted);
+    display: block;
+  }
+
+  .request-info strong {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .prompt-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .prompt-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    line-height: 1.4;
+    color: var(--text);
+  }
+
+  /* Recording UI */
+  .record-section {
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  .record-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: none;
+    background: var(--purple);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(91,79,216,0.3);
+    position: relative;
+  }
+
+  .record-btn:hover { transform: scale(1.05); }
+  .record-btn.recording {
+    background: var(--red);
+    box-shadow: 0 4px 20px rgba(229,62,62,0.4);
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(229,62,62,0.4); }
+    50% { box-shadow: 0 4px 32px rgba(229,62,62,0.7), 0 0 0 12px rgba(229,62,62,0.1); }
+  }
+
+  .mic-icon { font-size: 32px; }
+  .stop-icon { width: 24px; height: 24px; background: white; border-radius: 4px; }
+
+  .record-status {
+    font-size: 15px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    min-height: 24px;
+  }
+
+  .record-status.recording-active { color: var(--red); font-weight: 500; }
+
+  .timer {
+    font-size: 13px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    min-height: 20px;
+  }
+
+  /* Playback */
+  .playback-section {
+    display: none;
+    margin-top: 16px;
+  }
+
+  .playback-section.visible { display: block; }
+
+  .audio-player {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+
+  .re-record-btn {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .re-record-btn:hover { background: var(--bg); color: var(--text); }
+
+  /* Form */
+  .form-group { margin-bottom: 16px; }
+
+  label {
+    font-size: 13px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  input[type="text"],
+  input[type="email"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: var(--purple);
+    background: white;
+  }
+
+  /* Terms */
+  .terms-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .terms-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--purple);
+  }
+
+  .terms-row label {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .terms-row a { color: var(--purple); text-decoration: none; }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--purple);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(91,79,216,0.3);
+  }
+
+  .submit-btn:hover:not(:disabled) { background: var(--purple-light); transform: translateY(-1px); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  /* Error / success */
+  .error-box {
+    background: #FFF5F5;
+    border: 1px solid #FED7D7;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: none;
+    font-size: 14px;
+    color: var(--error);
+  }
+
+  .error-box.visible { display: block; }
+
+  .success-card {
+    text-align: center;
+    padding: 32px 24px;
+    display: none;
+  }
+
+  .success-card.visible { display: block; }
+
+  .success-icon {
+    width: 72px;
+    height: 72px;
+    background: #F0FFF4;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 36px;
+  }
+
+  .success-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    margin-bottom: 12px;
+    color: var(--success);
+  }
+
+  .success-card p {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* App promo */
+  .app-promo {
+    background: linear-gradient(135deg, var(--purple) 0%, #8B5CF6 100%);
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    color: white;
+    margin-top: 16px;
+  }
+
+  .app-promo h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .app-promo p { font-size: 14px; opacity: 0.85; margin-bottom: 16px; line-height: 1.5; }
+
+  .app-btn {
+    display: inline-block;
+    background: white;
+    color: var(--purple);
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .app-btn:hover { transform: scale(1.03); }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #loading-screen {
+    text-align: center;
+    padding: 60px 0;
+    color: var(--muted);
+  }
+
+  #main-content { display: none; }
+  #main-content.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">
+    <h1>Horse's Mouth</h1>
+    <p>Preserve the stories that matter most</p>
+  </div>
+
+  <div id="loading-screen">
+    <div class="spinner" style="border-color: rgba(91,79,216,0.3); border-top-color: var(--purple);"></div>
+    <p style="margin-top:12px;">Loading your request...</p>
+  </div>
+
+  <div id="main-content">
+    <!-- Request card -->
+    <div class="card" id="request-card">
+      <div class="request-from">
+        <div class="avatar" id="sender-avatar">?</div>
+        <div class="request-info">
+          <small>Request from</small>
+          <strong id="sender-name">Loading...</strong>
+        </div>
+      </div>
+      <div class="prompt-label">They want to hear about:</div>
+      <div class="prompt-text" id="prompt-text">Loading...</div>
+    </div>
+
+    <!-- Success state -->
+    <div class="card success-card" id="success-card">
+      <div class="success-icon">🎉</div>
+      <h2>Story Sent!</h2>
+      <p>Your story has been saved and delivered. Thank you for sharing this memory.</p>
+    </div>
+
+    <!-- Recording card -->
+    <div class="card" id="record-card">
+      <div class="record-section">
+        <button class="record-btn" id="record-btn" onclick="toggleRecording()">
+          <span class="mic-icon" id="btn-icon">🎙️</span>
+        </button>
+        <div class="record-status" id="record-status">Tap the mic to start recording</div>
+        <div class="timer" id="timer"></div>
+      </div>
+
+      <div class="playback-section" id="playback-section">
+        <audio class="audio-player" id="audio-player" controls></audio>
+        <button class="re-record-btn" onclick="reRecord()">↺ Record again</button>
+      </div>
+    </div>
+
+    <!-- Submit card -->
+    <div class="card" id="submit-card">
+      <div class="form-group">
+        <label for="input-name">Your Name</label>
+        <input type="text" id="input-name" placeholder="e.g. Grandma Rose" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label for="input-email">Your Email</label>
+        <input type="email" id="input-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="input-title">Story Title</label>
+        <input type="text" id="input-title" placeholder="Give your story a title">
+      </div>
+
+      <div class="terms-row">
+        <input type="checkbox" id="terms-check">
+        <label for="terms-check">
+          I agree to the <a href="https://www.horsesmouthapp.com/terms" target="_blank">Terms &amp; Conditions</a> and
+          <a href="https://www.horsesmouthapp.com/privacy" target="_blank">Privacy Policy</a>
+        </label>
+      </div>
+
+      <div class="error-box" id="error-box"></div>
+
+      <button class="submit-btn" id="submit-btn" onclick="submitStory()">Send Story 🎙️</button>
+    </div>
+
+    <!-- App promo -->
+    <div class="app-promo">
+      <h3>Want to do more?</h3>
+      <p>Install the app to listen, request, and keep your own library of family memories.</p>
+      <a href="https://apps.apple.com/app/horses-mouth/id6744811652" class="app-btn">Install the App</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE_URL = 'https://www.horsesmouthapp.com';
+
+// Get request ID from URL
+function getRequestId() {
+  // Support both ?id=5 (static hosting) and /request/5 (path-based routing)
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('id')) return params.get('id');
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  return parts[parts.length - 1];
+}
+
+let requestId = getRequestId();
+let requestData = null;
+let mediaRecorder = null;
+let audioChunks = [];
+let audioBlob = null;
+let timerInterval = null;
+let seconds = 0;
+let isRecording = false;
+
+// Load request data
+async function loadRequest() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/requests/${requestId}`);
+    if (!res.ok) throw new Error('Request not found');
+    requestData = await res.json();
+
+    // Populate UI
+    const senderName = requestData.sender_name || requestData.senderName || 'Someone';
+    document.getElementById('sender-name').textContent = senderName;
+    document.getElementById('sender-avatar').textContent = senderName.charAt(0).toUpperCase();
+    document.getElementById('prompt-text').textContent = requestData.prompt || 'Share your story';
+
+    // Pre-fill title from prompt
+    const promptWords = (requestData.prompt || '').split(' ').slice(0, 5).join(' ');
+    document.getElementById('input-title').value = promptWords ? `Story about ${promptWords}` : '';
+
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('main-content').classList.add('visible');
+
+    // Check if already completed
+    if (requestData.status === 'completed') {
+      document.getElementById('record-card').style.display = 'none';
+      document.getElementById('submit-card').style.display = 'none';
+      document.getElementById('success-card').classList.add('visible');
+    }
+  } catch (err) {
+    document.getElementById('loading-screen').innerHTML =
+      '<p style="color:#E53E3E">Could not load this request. The link may be invalid or expired.</p>';
+  }
+}
+
+// Recording
+async function toggleRecording() {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+
+    // Pick best supported format
+    const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg', 'audio/mp4']
+      .find(t => MediaRecorder.isTypeSupported(t)) || '';
+
+    mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      const url = URL.createObjectURL(audioBlob);
+      document.getElementById('audio-player').src = url;
+      document.getElementById('playback-section').classList.add('visible');
+      stream.getTracks().forEach(t => t.stop());
+    };
+
+    mediaRecorder.start(100);
+    isRecording = true;
+    seconds = 0;
+
+    document.getElementById('record-btn').classList.add('recording');
+    document.getElementById('btn-icon').textContent = '⏹';
+    document.getElementById('record-status').textContent = 'Recording... tap to stop';
+    document.getElementById('record-status').classList.add('recording-active');
+    document.getElementById('playback-section').classList.remove('visible');
+
+    timerInterval = setInterval(() => {
+      seconds++;
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = (seconds % 60).toString().padStart(2, '0');
+      document.getElementById('timer').textContent = `${m}:${s}`;
+    }, 1000);
+  } catch (err) {
+    showError('Microphone access denied. Please allow microphone access and try again.');
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  isRecording = false;
+  clearInterval(timerInterval);
+
+  document.getElementById('record-btn').classList.remove('recording');
+  document.getElementById('btn-icon').textContent = '🎙️';
+  document.getElementById('record-status').textContent = 'Recording ready';
+  document.getElementById('record-status').classList.remove('recording-active');
+}
+
+function reRecord() {
+  audioBlob = null;
+  document.getElementById('audio-player').src = '';
+  document.getElementById('playback-section').classList.remove('visible');
+  document.getElementById('record-status').textContent = 'Tap the mic to start recording';
+  document.getElementById('timer').textContent = '';
+}
+
+// Submit
+async function submitStory() {
+  const name = document.getElementById('input-name').value.trim();
+  const email = document.getElementById('input-email').value.trim();
+  const title = document.getElementById('input-title').value.trim();
+  const terms = document.getElementById('terms-check').checked;
+
+  if (!audioBlob) return showError('Please record your story first.');
+  if (!name) return showError('Please enter your name.');
+  if (!email || !email.includes('@')) return showError('Please enter a valid email address.');
+  if (!title) return showError('Please enter a title for your story.');
+  if (!terms) return showError('Please agree to the Terms & Conditions.');
+
+  hideError();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving...';
+
+  try {
+    // Step 1: Create/get user
+    btn.innerHTML = '<span class="spinner"></span>Setting up account...';
+    const userRes = await fetch(`${BASE_URL}/api/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, requestId: parseInt(requestId) })
+    });
+    const userData = await userRes.json().catch(() => ({}));
+    if (!userRes.ok || userData.error) throw new Error(userData.error || 'Could not set up your account. Please try again.');
+    if (!userData.id) throw new Error('Account setup failed. Please try again.');
+
+    // Step 2: Upload audio
+    btn.innerHTML = '<span class="spinner"></span>Uploading recording...';
+    const ext = (audioBlob.type || 'audio/webm').includes('mp4') ? 'mp4' :
+                (audioBlob.type || '').includes('ogg') ? 'ogg' : 'webm';
+    const formData = new FormData();
+    formData.append('file', audioBlob, `${title.replace(/\s+/g, '_')}.${ext}`);
+
+    const uploadRes = await fetch(`${BASE_URL}/api/upload?requestId=${requestId}`, {
+      method: 'POST',
+      body: formData
+    });
+    const uploadData = await uploadRes.json().catch(() => ({}));
+    if (!uploadRes.ok || uploadData.error) throw new Error(uploadData.error || `Upload failed (${uploadRes.status}). Please try again.`);
+    if (!uploadData.url) throw new Error('Upload completed but no file URL returned. Please try again.');
+
+    // Step 3: Save story
+    btn.innerHTML = '<span class="spinner"></span>Saving your story...';
+    const storyRes = await fetch(`${BASE_URL}/api/stories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requestId: parseInt(requestId),
+        contributorId: userData.id,
+        audioUrl: uploadData.url,
+        title: title,
+        duration: null,
+        storytellerName: name
+      })
+    });
+    const storyData = await storyRes.json().catch(() => ({}));
+    if (!storyRes.ok || storyData.error) throw new Error(storyData.error || 'Could not save your story. Please try again.');
+
+    // Success!
+    document.getElementById('record-card').style.display = 'none';
+    document.getElementById('submit-card').style.display = 'none';
+    document.getElementById('success-card').classList.add('visible');
+    window.scrollTo(0, 0);
+
+  } catch (err) {
+    showError(err.message || 'Something went wrong. Please try again.');
+    btn.disabled = false;
+    btn.innerHTML = 'Send Story 🎙️';
+  }
+}
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.textContent = msg;
+  box.classList.add('visible');
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function hideError() {
+  document.getElementById('error-box').classList.remove('visible');
+}
+
+// Init
+loadRequest();
+</script>
+</body>
+</html>
