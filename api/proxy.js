@@ -7,6 +7,7 @@ export const config = {
 
 export default async function handler(req, res) {
   const TARGET = "https://www.horsesmouthapp.com";
+  const PROJECT_GROUP_ID = "84557178-62ec-4d46-80b6-88205477b0f5";
 
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -16,15 +17,12 @@ export default async function handler(req, res) {
     return res.status(204).end();
   }
 
-  // Get target path from query param
   const urlObj = new URL(req.url, 'https://example.com');
   const targetPath = urlObj.searchParams.get('path') || '/';
-  
-  // Rebuild query string without 'path' param
   urlObj.searchParams.delete('path');
   const remainingQuery = urlObj.search;
-  
   const targetUrl = TARGET + targetPath + remainingQuery;
+
   console.log('Proxying:', req.method, '->', targetUrl);
 
   const headers = {};
@@ -35,6 +33,7 @@ export default async function handler(req, res) {
     }
   }
   headers['origin'] = TARGET;
+  headers['x-createxyz-project-group-id'] = PROJECT_GROUP_ID;
 
   try {
     const chunks = [];
@@ -44,10 +43,7 @@ export default async function handler(req, res) {
       req.on('error', reject);
     });
 
-    const fetchOptions = {
-      method: req.method,
-      headers,
-    };
+    const fetchOptions = { method: req.method, headers };
 
     if (req.method !== 'GET' && req.method !== 'HEAD' && chunks.length > 0) {
       fetchOptions.body = Buffer.concat(chunks);
