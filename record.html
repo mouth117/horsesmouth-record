@@ -315,7 +315,7 @@ async function submitStory() {
     const formData = new FormData();
     formData.append('file', audioBlob, 'story_' + requestId + '.' + ext);
 
-    const uploadRes = await fetch('https://www.horsesmouthapp.com/api/recording-upload?requestId=' + requestId, {
+    const uploadRes = await fetch('https://www.horsesmouthapp.com/api/media?requestId=' + requestId, {
       method: 'POST',
       body: formData
     });
