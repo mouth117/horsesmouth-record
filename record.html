@@ -202,6 +202,8 @@ async function loadRequest() {
     document.getElementById('prompt-text').textContent = prompt;
     // Store the request ID for later use (upload/story creation)
     window.requestId = id;
+    document.getElementById('loading-screen').style.display = 'none';
+document.getElementById('main-content').classList.add('visible');
     return;
   }
 
