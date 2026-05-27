@@ -203,7 +203,7 @@ async function loadRequest() {
     // Store the request ID for later use (upload/story creation)
     window.requestId = id;
     document.getElementById('loading-screen').style.display = 'none';
-document.getElementById('main-content').style.display = 'block';
+document.getElementById('main-content').classList.add('visible');
     return;
   }
 
