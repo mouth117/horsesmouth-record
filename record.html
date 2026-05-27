@@ -170,7 +170,10 @@
 const BASE_URL = 'https://horsesmouth-record.vercel.app';
 
 function apiUrl(path) {
-  return BASE_URL + '/api/proxy' + path;
+  // Strip leading /api to avoid double /api/proxy/api/... 
+  // Proxy will forward to horsesmouthapp.com + path
+  const strippedPath = path.replace(/^\/api/, '');
+  return BASE_URL + '/api/proxy' + strippedPath;
 }
 
 function getRequestId() {
@@ -311,15 +314,27 @@ async function submitStory() {
       // Continue without contributorId
     }
 
-    // Step 2: Upload audio
+    // Step 2: Upload audio - convert to base64 to avoid CORS multipart issues
     btn.innerHTML = '<span class="spinner"></span>Uploading recording...';
     const ext = (audioBlob.type || 'audio/webm').includes('mp4') ? 'mp4' : (audioBlob.type || '').includes('ogg') ? 'ogg' : 'webm';
-    const formData = new FormData();
-    formData.append('file', audioBlob, title.replace(/\s+/g, '_') + '.' + ext);
+    const mimeType = audioBlob.type || 'audio/webm';
+    
+    // Convert blob to base64
+    const base64Audio = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(audioBlob);
+    });
 
     const uploadRes = await fetch(apiUrl('/api/upload?requestId=' + requestId), {
       method: 'POST',
-      body: formData
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file: base64Audio,
+        mimeType: mimeType,
+        filename: 'story_' + requestId + '.' + ext
+      })
     });
     const uploadData = await uploadRes.json().catch(() => ({}));
     if (!uploadRes.ok || uploadData.error) throw new Error(uploadData.error || 'Upload failed (' + uploadRes.status + '). Please try again.');
