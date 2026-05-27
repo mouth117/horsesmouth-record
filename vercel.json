@@ -5,8 +5,5 @@
       "maxDuration": 30,
       "memory": 1024
     }
-  },
-  "rewrites": [
-    { "source": "/api/proxy/:path*", "destination": "/api/proxy" }
-  ]
+  }
 }
