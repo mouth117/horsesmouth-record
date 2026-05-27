@@ -189,45 +189,40 @@ let timerInterval = null;
 let seconds = 0;
 let isRecording = false;
 
+
 async function loadRequest() {
   const params = new URLSearchParams(window.location.search);
-  const senderParam = params.get('sender');
-  const promptParam = params.get('prompt');
+  const id = params.get('id');
+  const sender = params.get('sender');
+  const prompt = params.get('prompt');
 
-  if (senderParam && promptParam) {
-    const senderName = decodeURIComponent(senderParam);
-    const prompt = decodeURIComponent(promptParam);
-    document.getElementById('sender-name').textContent = senderName;
-    document.getElementById('sender-avatar').textContent = senderName.charAt(0).toUpperCase();
+  // If sender and prompt are already in the URL, skip the API call entirely
+  if (sender && prompt) {
+    document.getElementById('sender-name').textContent = sender;
     document.getElementById('prompt-text').textContent = prompt;
+    // Store the request ID for later use (upload/story creation)
+    window.requestId = id;
+    return;
+  }
 
-    document.getElementById('loading-screen').style.display = 'none';
-    document.getElementById('main-content').classList.add('visible');
+  // Only fetch from API if we don't have the data in URL params
+  if (!id) {
+    showError('No request ID provided');
     return;
   }
 
   try {
-    const res = await fetch(apiUrl('/api/requests/' + requestId));
+    const res = await fetch(`https://www.horsesmouthapp.com/api/requests/${id}`);
     if (!res.ok) throw new Error('Request not found');
     const data = await res.json();
-    const senderName = data.sender_name || data.senderName || 'Someone';
-    document.getElementById('sender-name').textContent = senderName;
-    document.getElementById('sender-avatar').textContent = senderName.charAt(0).toUpperCase();
-    document.getElementById('prompt-text').textContent = data.prompt || 'Share your story';
-
-    document.getElementById('loading-screen').style.display = 'none';
-    document.getElementById('main-content').classList.add('visible');
-    if (data.status === 'completed') {
-      document.getElementById('record-card').style.display = 'none';
-      document.getElementById('submit-card').style.display = 'none';
-      document.getElementById('success-card').classList.add('visible');
-    }
+    document.getElementById('sender-name').textContent = data.sender_display_name;
+    document.getElementById('prompt-text').textContent = data.prompt;
+    window.requestId = id;
   } catch (err) {
-    document.getElementById('loading-screen').innerHTML =
-      '<p style="color:#E53E3E">Could not load this request. The link may be invalid or expired.</p>';
+    console.error('Load request failed:', err);
+    showError('Load failed');
   }
 }
-
 async function toggleRecording() {
   if (isRecording) { stopRecording(); } else { startRecording(); }
 }
