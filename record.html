@@ -315,7 +315,7 @@ async function submitStory() {
     const formData = new FormData();
     formData.append('file', audioBlob, 'story_' + requestId + '.' + ext);
 
-    const uploadRes = await fetch(apiUrl('/api/upload?requestId=' + requestId), {
+    const uploadRes = await fetch(,'https://www.horsesmouthapp.com/api/recording-upload?requestId=' + requestId {
       method: 'POST',
       body: formData
     });
@@ -325,7 +325,7 @@ async function submitStory() {
 
     // Step 3: Save story
     btn.innerHTML = '<span class="spinner"></span>Saving your story...';
-    const storyRes = await fetch(apiUrl('/api/stories'), {
+    const storyRes = await fetch('https://www.horsesmouthapp.com/api/stories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
